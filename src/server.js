@@ -5,6 +5,7 @@
  * @version 1.0.0
  */
 
+import 'dotenv/config'
 import express from 'express'
 import expressEjsLayouts from 'express-ejs-layouts'
 import session from 'express-session'
@@ -30,6 +31,7 @@ try {
 
   // Set the base URL to use for all relative URLs in the document.
   const baseURL = process.env.BASE_URL || '/'
+  console.log(baseURL)
 
   const app = express()
 
@@ -72,15 +74,10 @@ try {
   if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1) // trust first proxy
   }
+
   app.use(session(sessionOptions))
 
-  // Middleware to be executed before the routes.
-  app.use((req, res, next) => {
-    // Pass the base URL to the views.
-    res.locals.baseURL = baseURL
-
-    next()
-  })
+  app.locals.baseURL = baseURL
 
   // Middleware to add userId to res.locals
   app.use((req, res, next) => {
@@ -91,7 +88,7 @@ try {
   // Register routes.
   app.use('/', router)
 
-    // Error handler.
+  // Error handler.
   app.use((err, req, res, next) => {
   // 404 Not Found.
     if (err.status === 404) {
