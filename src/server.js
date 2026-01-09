@@ -5,6 +5,15 @@
  * @version 1.0.0
  */
 
+import express from 'express'
+import expressEjsLayouts from 'express-ejs-layouts'
+import session from 'express-session'
+import logger from 'morgan'
+import helmet from 'helmet'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { sessionOptions } from './config/sessionOptions.js'
+import { router } from './routes/router.js'
 import { db } from './config/mysql_config.js'
 
 try {
@@ -15,6 +24,78 @@ try {
       console.error('Database connection failed:', err)
       process.exitCode = 1
     })
+
+  // Get the path of the current module's directory.
+  const directoryFullName = dirname(fileURLToPath(import.meta.url))
+
+  // Set the base URL to use for all relative URLs in the document.
+  const baseURL = process.env.BASE_URL || '/'
+
+  const app = express()
+
+  // Set up security-related HTTP headers.
+  app.use(helmet())
+
+  // Set up Content Security Policy (CSP) headers.
+  app.use(helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
+      imgSrc: ["'self'"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  }))
+
+  // Set up a morgan logger using the dev format for log entries.
+  app.use(logger('dev'))
+
+  // View engine setup.
+  app.set('view engine', 'ejs')
+  app.set('views', join(directoryFullName, 'views'))
+  app.set('layout', join(directoryFullName, 'views', 'layouts', 'default'))
+  app.set('layout extractScripts', true)
+  app.set('layout extractStyles', true)
+  app.use(expressEjsLayouts)
+
+  // Parse requests of the content type application/x-www-form-urlencoded.
+  // Populates the request object with a body object (req.body).
+  app.use(express.urlencoded({ extended: false }))
+
+  // Serve static files.
+  app.use(express.static(join(directoryFullName, '..', 'public')))
+
+  // // Setup and use session middleware (https://github.com/expressjs/session)
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1) // trust first proxy
+  }
+  app.use(session(sessionOptions))
+
+  // Middleware to be executed before the routes.
+  app.use((req, res, next) => {
+    // Pass the base URL to the views.
+    res.locals.baseURL = baseURL
+
+    next()
+  })
+
+  // Middleware to add userId to res.locals
+  app.use((req, res, next) => {
+    res.locals.userId = req.session.userId
+    next()
+  })
+
+  // Register routes.
+  app.use('/', router)
+
+  // Starts the HTTP server listening for connections.
+  app.listen(process.env.PORT, () => {
+    console.log(`Server running at http://localhost:${process.env.PORT}`)
+    console.log('Press Ctrl-C to terminate...')
+  })
 
 } catch (error) {
   console.error(error)
