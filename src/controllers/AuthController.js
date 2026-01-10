@@ -132,12 +132,12 @@ export class AuthController {
         throw new Error('Fill in all required fields.')
       }
       // Validate email format
-      if (!validator.isEmail(email)) {
+      if (!validator.isEmail(email) || email.length > 40) {
         throw new Error('Invalid email format.')
       }
 
       // Validate password length (must be at least 6 characters)
-      if (!validator.isLength(password, { min: 6, max: 150 })) {
+      if (!validator.isLength(password, { min: 6, max: 200 })) {
         throw new Error('Password must be at least 6 characters long.')
       }
 

@@ -8,6 +8,7 @@
 import express from 'express'
 import { AuthController } from '../controllers/AuthController.js'
 
+
 export const router = express.Router()
 
 const controller = new AuthController()
