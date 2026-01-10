@@ -51,7 +51,7 @@ export class AuthController {
       }
 
       // Retrieve the user from the database.
-      const query = 'SELECT userid, password FROM Members WHERE email = ?'
+      const query = 'SELECT userid, fname, lname, password FROM Members WHERE email = ?'
       const [results] = await db.query(query, [email])
       const user = results[0]
 
@@ -65,11 +65,12 @@ export class AuthController {
       // Regenerate the session and redirect the user to the home page.
       req.session.regenerate(async () => {
         req.session.userId = user.userid
-        res.redirect(`/`)
+       req.session.flash = { type: 'success', text: `Welcome ${user.fname} ${user.lname}!`}
+        res.redirect('./book-search')
       })
     } catch (error) {
-      res.locals.errorMessage = 'Invalid email or password.'
-      res.render('./auth/login')
+      req.session.flash = { type: 'error', text: 'Invalid email or password.' }
+      res.redirect('.')
     }
   }
 
@@ -89,6 +90,7 @@ export class AuthController {
         }
 
         // Redirect the user to the home page.
+        req.session.flash = { type: 'success', text: 'You have been logged out successfully.' }
         res.redirect(`/`)
       })
     } else {
@@ -107,8 +109,8 @@ export class AuthController {
    */
   register (req, res, next) {
     if (req.session.userId) {
-      // If the user is logged in, redirect them to the home page.
-      res.redirect(`/`)
+      // If the user is logged in, redirect them.
+      res.redirect('./book-search')
     } else {
       res.render('./auth/register')
     }
@@ -127,25 +129,21 @@ export class AuthController {
 
       // If the username or password is not provided, throw an error.
       if (!fname || !lname || !address || !city || !zip || !email || !password) {
-        res.locals.errorMessage = 'All required fields must be filled.'
-        return res.render('./auth/register')
+        throw new Error('Fill in all required fields.')
       }
       // Validate email format
       if (!validator.isEmail(email)) {
-        res.locals.errorMessage = 'Invalid email format.'
-        return res.render('./auth/register')
+        throw new Error('Invalid email format.')
       }
 
-      // Validate password length
-      if (validator.isLength(password, { min: 6, max: 150 })) {
-        res.locals.errorMessage = 'Password must be at least 6 characters long.'
-        return  res.render('./auth/register')
+      // Validate password length (must be at least 6 characters)
+      if (!validator.isLength(password, { min: 6, max: 150 })) {
+        throw new Error('Password must be at least 6 characters long.')
       }
 
       // Simple zip code format validation (e.g., 12345 or 123 45)
       if (!/^\d{3}\s?\d{2}$/.test(zip.trim())) {
-        res.locals.errorMessage = 'Invalid zip code format.'
-        return res.render('./auth/register')
+        throw new Error('Invalid zip code format.')
       }
 
       const hashedPassword = await bcrypt.hash(password, 8)
@@ -155,12 +153,18 @@ export class AuthController {
 
       await db.query(query, [fname, lname, address, city, zip, phone, email, hashedPassword])
 
-      res.locals.successMessage = 'Account created successfully. You can now log in.'
-      res.render('./auth/register')
+      req.session.flash = { type: 'success', text: 'Registration successful. You can now log in.' }
+      res.redirect('./login')
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-        res.locals.errorMessage = 'Use another email address.'
-        res.render('./auth/register')
+        req.session.flash = { type: 'error', text: 'Try another email address.'}
+        res.redirect('./register')
+      } else if (error.message === 'Fill in all required fields.' ||
+                 error.message === 'Invalid email format.' ||
+                 error.message === 'Password must be at least 6 characters long.' ||
+                 error.message === 'Invalid zip code format.') {
+        req.session.flash = { type: 'error', text: error.message }
+        res.redirect('./register')
       } else {
         return next(error)
       }

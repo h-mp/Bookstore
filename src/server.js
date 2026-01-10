@@ -79,7 +79,17 @@ try {
 
   app.locals.baseURL = baseURL
 
-  // Middleware to add userId to res.locals
+  // Middlewares to run before routes.
+  app.use((req, res, next) => {
+    // Flash messages - survives only a round trip.
+    if (req.session.flash) {
+      res.locals.flash = req.session.flash
+      delete req.session.flash
+    }
+
+    next()
+  })
+
   app.use((req, res, next) => {
     res.locals.userId = req.session.userId
     next()
