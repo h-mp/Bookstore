@@ -7,7 +7,6 @@
 
 import bcrypt from 'bcryptjs'
 import { db } from '../config/mysql_config.js' 
-import validator from 'validator'
 
 /**
  * Encapsulates a controller.
@@ -23,7 +22,7 @@ export class AuthController {
   login (req, res, next) {
     if (req.session.userId) {
       // If the user is logged in, redirect them to the home page.
-      res.redirect(`/`)
+      res.redirect(`/books`)
     } else {
       res.render('./auth/login')
     }
@@ -39,20 +38,17 @@ export class AuthController {
   async loginPost (req, res, next) {
     try {
       const { email, password } = req.body
-
+      
       // If the username or password is not provided, throw an error.
       if (!email || !password) {
         throw new Error('Email and password are required.')
       }
 
-      // Validate email format
-      if (!validator.isEmail(email)) {
-        throw new Error('Invalid email format.')
-      }
+      const normalizedEmail = (email.trim().toLowerCase())
 
       // Retrieve the user from the database.
       const query = 'SELECT userid, fname, lname, password FROM Members WHERE email = ?'
-      const [results] = await db.query(query, [email])
+      const [results] = await db.query(query, [normalizedEmail])
       const user = results[0]
 
       // Compare passwords.
@@ -62,15 +58,17 @@ export class AuthController {
         throw new Error('Invalid email or password.')
       }
 
+      console.log(`User ${user.userid} logged in.`)
+
       // Regenerate the session and redirect the user to the home page.
       req.session.regenerate(async () => {
         req.session.userId = user.userid
        req.session.flash = { type: 'success', text: `Welcome ${user.fname} ${user.lname}!`}
-        res.redirect('./book-search')
+        res.redirect('/books')
       })
     } catch (error) {
       req.session.flash = { type: 'error', text: 'Invalid email or password.' }
-      res.redirect('.')
+      res.redirect('./login')
     }
   }
 
@@ -110,7 +108,7 @@ export class AuthController {
   register (req, res, next) {
     if (req.session.userId) {
       // If the user is logged in, redirect them.
-      res.redirect('./book-search')
+      res.redirect('./books')
     } else {
       res.render('./auth/register')
     }
@@ -131,8 +129,11 @@ export class AuthController {
       if (!fname || !lname || !address || !city || !zip || !email || !password) {
         throw new Error('Fill in all required fields.')
       }
+
+      const normalizedEmail = email.trim().toLowerCase()
+
       // Validate email format
-      if (!validator.isEmail(email) || email.length > 40) {
+      if (!validator.isEmail(normalizedEmail) || normalizedEmail.length > 40) {
         throw new Error('Invalid email format.')
       }
 
@@ -151,7 +152,7 @@ export class AuthController {
       // Insert the new member into the database.
       const query = `INSERT INTO Members (fname, lname, address, city, zip, phone, email, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-      await db.query(query, [fname, lname, address, city, zip, phone, email, hashedPassword])
+      await db.query(query, [fname, lname, address, city, zip, phone, normalizeEmail, hashedPassword])
 
       req.session.flash = { type: 'success', text: 'Registration successful. You can now log in.' }
       res.redirect('./login')
