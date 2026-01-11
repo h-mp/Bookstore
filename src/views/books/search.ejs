@@ -1,6 +1,6 @@
 <h1>Search for books</h1>
 
-<form class="form" action="/books/subject" method="get">
+<form class="form" action="./books/search" method="get">
   <div class="form-group">
     <label class="form-label" for="subject">
       Filter by subject:
@@ -31,3 +31,27 @@
     <button type="submit" class="button">Search</button>
   </div>
 </form>
+
+<div id="book-list">
+  <% if (typeof books !== 'undefined' && books.length > 0) { %>
+      <h2>Books:</h2>
+      <% books.forEach(function(book) { %>
+        <div class="book">
+          <h3 class="book-title"><%= book.title %></h3> 
+          <p class="book-info">Author: <%= book.author %></p> 
+          <p class="book-info">ISBN: <%= book.isbn %></p>
+          <p class="book-info">Subject: <%= book.subject %></p>
+          <p class="book-info">Price: <%= book.price %> $</p>
+          <% if (typeof userId !== 'undefined' && userId) { %>
+            <form class="form" method="post" action="./cart/add">
+              <input type="hidden" name="isbn" value="<%= book.isbn %>"/>
+              <input type="number" id="quantity-<%= book.isbn %>" name="quantity" min="1" max="50" value="1"/> <button class="button">Add to cart</button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+      <button class="button" type=""> Next page </button>
+  <% } else if (typeof books !== 'undefined') { %>
+      <p>No books found matching your criteria.</p>
+  <% } %>
+</div>

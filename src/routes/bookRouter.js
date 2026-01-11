@@ -14,3 +14,4 @@ const controller = new BookController()
 
 // Routes for the book search page.
 router.get('/', (req, res, next) => controller.index(req, res, next))
+router.get('/search', (req, res, next) => controller.search(req, res, next))
