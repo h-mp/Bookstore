@@ -49,7 +49,11 @@ export class AuthController {
       // Retrieve the user from the database.
       const query = 'SELECT userid, fname, lname, password FROM Members WHERE email = ?'
       const [results] = await db.query(query, [normalizedEmail])
+      
       const user = results[0]
+      if (!user) {
+        throw new Error('Invalid email or password.')
+      }
 
       // Compare passwords.
       const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -88,7 +92,6 @@ export class AuthController {
         }
 
         // Redirect the user to the home page.
-        req.session.flash = { type: 'success', text: 'You have been logged out successfully.' }
         res.redirect(`/`)
       })
     } else {
