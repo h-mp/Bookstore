@@ -14,3 +14,4 @@ const controller = new CartController()
 
 // Routes for the shopping cart.
 router.get('/', (req, res, next) => controller.index(req, res, next))
+router.post('/add', (req, res, next) => controller.addToCart(req, res, next))
