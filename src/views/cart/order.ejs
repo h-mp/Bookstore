@@ -1,6 +1,15 @@
-<h1>Shopping Cart</h1>
-<div class="cart">
-  <% if (cartItems && typeof cartItems !== 'undefined' && cartItems.length > 0) { %>
+<h1>Order Details</h1>
+
+<div class="order-details">
+  <h2>Invoice for Order no.</h2>
+  <div class="shipping-info">
+    <p>Name: </p>
+    <p>Address: </p>
+    <p></p>
+    <p>Email: </p>
+  </div>
+
+  <h2>Books</h2>
     <table class="table">
       <tr class="title-row">
         <th>ISBN</th>
@@ -20,11 +29,5 @@
       <% }) %>
     </table>
 
-    <p id="grandTotal">Total: <%= grandTotal %> $</p>
-
-    <a href="/cart/order" class="button">Checkout</a>
-
-  <% } else { %>
-    <p>Your cart is empty.</p>
-  <% } %>
+    <p id="grandTotal">Order Total: <%= grandTotal %> $</p>
 </div>

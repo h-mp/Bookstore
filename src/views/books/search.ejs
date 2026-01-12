@@ -43,9 +43,9 @@
           <p class="book-info">Subject: <%= book.subject %></p>
           <p class="book-info">Price: <%= book.price %> $</p>
           <% if (typeof userId !== 'undefined' && userId) { %>
-            <form class="form" method="post" action="./cart/add">
+            <form class="form cart-form" method="post" action="./cart/add">
               <input type="hidden" name="isbn" value="<%= book.isbn %>"/>
-              <input type="number" id="quantity-<%= book.isbn %>" name="quantity" min="1" max="50" value="1"/> <button class="button">Add to cart</button>
+              <input type="number" id="quantity-<%= book.isbn %>" class="quantity-input" name="quantity" min="1" max="100" value="1"/> <button class="button" type="submit">Add to cart</button>
             </form>
           <% } %>
         </div>

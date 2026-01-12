@@ -44,7 +44,7 @@ export class CartController {
       res.render('cart/index', { cartItems, grandTotal })
     } catch (error) {
       if (error.message === 'User not logged in') {
-        res.redirect('/login')
+        res.redirect('/auth/login')
       } else {
         next(error)
       }
@@ -92,10 +92,43 @@ export class CartController {
       res.redirect('/books')
     } catch (error) {
       if (error.message === 'User not logged in') {
-        res.redirect('/login')
+        res.redirect('/auth/login')
       } else {
         req.session.flash = {type: 'error', text: "An error occurred while adding the book to the cart"}
         res.redirect('/books')
+      }
+    }
+  }
+
+  /**
+   * Renders the checkout page.
+   *
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response object.
+   * @param {Function} next - The next middleware function.
+   */
+  async checkout (req, res, next) {
+    try {
+      const userId = req.session.userId
+      if (!userId) {
+        throw new Error('User not logged in')
+      }
+
+      const query = "SELECT c.isbn, c.qty, m.fname, m.lname, m.address, m.city, m.zip"
+      + "FROM cart c "
+      + "JOIN members m "
+      + "WHERE userid = ?"
+
+      const cartItems = []
+      const grandTotal = 0
+
+      res.render('cart/order', { cartItems, grandTotal })
+    } catch (error) {
+      if (error.message === 'User not logged in') {
+        res.redirect('/authlogin')
+      } else {
+        req.session.flash = {type: "error", message: "An error occurred, please try again later"}
+        res.redirect('/cart')
       }
     }
   }

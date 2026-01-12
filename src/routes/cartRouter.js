@@ -15,3 +15,6 @@ const controller = new CartController()
 // Routes for the shopping cart.
 router.get('/', (req, res, next) => controller.index(req, res, next))
 router.post('/add', (req, res, next) => controller.addToCart(req, res, next))
+
+// Routes for checkout.
+router.get('/order', (req, res, next) => controller.checkout(req, res, next)) 

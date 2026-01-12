@@ -163,6 +163,10 @@ img {
   border: none;
 }
 
+.cart a {
+  text-decoration: none;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
