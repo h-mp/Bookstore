@@ -2,7 +2,7 @@
 
 <% if (cartItems && typeof cartItems !== 'undefined' && cartItems.length > 0) { %>
   <table class="table">
-    <tr>
+    <tr class="title-row">
       <th>ISBN</th>
       <th>Title</th>
       <th>Price $</th>
@@ -10,7 +10,7 @@
       <th>Total</th>
     </tr>
     <% cartItems.forEach(function(item) { %>
-      <tr>
+      <tr class="book-row">
         <td><%= item.isbn %></td>
         <td><%= item.title %></td>
         <td><%= item.price %> $</td>
@@ -20,7 +20,7 @@
     <% }) %>
   </table>
 
-  <p>Total: <%= grandTotal %> $</p>
+  <p id="grandTotal">Total: <%= grandTotal %> $</p>
 
   <button class="button">Checkout</button>
 

@@ -149,3 +149,52 @@ img {
   font-size: 18px;
   margin: 8px 0;
 }
+
+.quantity-input {
+  width: 60px;
+  font-size: 17px;
+  padding: 5px;
+  margin-right: 10px;
+}
+
+.book .cart-form {
+  margin: 0;
+  padding: 2px;
+  border: none;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.title-row {
+  font-size: 22px;
+}
+
+.title-row th {
+  padding: 10px;
+  text-align: left;
+}
+
+.book-row td {
+  font-size: 18px;
+  border: 1px solid #333;
+  padding: 10px;
+  text-align: left;
+}
+
+.book-row:nth-child(even) {
+  background-color: #f2f2f2;
+}
+.book-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+#grandTotal {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 20px;
+  padding: 10px;
+}
