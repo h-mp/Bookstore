@@ -15,8 +15,11 @@ export class BookController {
    * @param {Object} res - The response object.
    * @param {Function} next - The next middleware function.
    */
-  index (req, res, next) {
-    res.render('books/search')
+  async index (req, res, next) {
+    const subjectQuery = 'SELECT DISTINCT subject FROM books ORDER BY subject ASC'
+    const [subjects] = await db.query(subjectQuery)
+
+    res.render('books/search', {subjects})
   }
 
   /**
@@ -28,6 +31,9 @@ export class BookController {
    */
   async search (req, res, next) {
     try {
+      // Fetch  subjects for the dropdown
+      const [subjects] = await db.query('SELECT DISTINCT subject FROM books ORDER BY subject ASC')
+
       const { subject, author, title, itemsPerPage } = req.query
 
       // Validate and sanitize input
@@ -35,13 +41,12 @@ export class BookController {
         throw new Error('Subject is required')
       }
 
-      const sanitizedSubject = subject.trim()
       const sanitizedAuthor = (author && author.trim()) || undefined
       const sanitizedTitle  = (title  && title.trim())  || undefined
 
       // Build the SQL query dynamically based on provided parameters
       let queryPart = 'WHERE subject LIKE ?'
-      let queryParams = [`%${sanitizedSubject}%`]
+      let queryParams = [`%${subject}%`]
 
       if (sanitizedAuthor) {
         queryPart += ' AND author LIKE ?'
@@ -70,8 +75,9 @@ export class BookController {
       queryParams.push(limit, offset)
       const [books] = await db.query(fullQuery, queryParams)
 
-      res.render('books/search', { books, page, totalPages, query: req.query })
+      res.render('books/search', { books, page, totalPages, subjects, query: req.query })
     } catch (error) {
+      console.error(error)
       req.session.flash = {type: 'error', text: 'An error occurred while searching for books'}
       res.redirect('/books')
     }

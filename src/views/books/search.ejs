@@ -3,9 +3,14 @@
 <form class="form" action="./books/search" method="get">
   <div class="form-group">
     <label class="form-label" for="subject">
-      Filter by subject:
+      Choose subject:
     </label>
-    <input type="text" class="form-control"  id="subject" name="subject" placeholder="Enter a subject" required autocomplete="off" maxlength="100" autofocus/>
+    <select id="subject" name="subject" class="form-control form-select" required>
+      <option value="">-- Select a subject --</option>
+      <% subjects.forEach(function(s) { %>
+        <option value="<%= s.subject %>"><%= s.subject %></option>
+      <% }) %>
+    </select>
   </div>
 
   <div class="form-group">
