@@ -50,7 +50,21 @@
           <% } %>
         </div>
       <% }) %>
-      <button class="button" type=""> Next page </button>
+      <div class="page-navigation">
+        <% if (page > 1) { %>
+          <a class="button" href="/books/search?<%= new URLSearchParams({...query, page: page - 1
+          }).toString() %>">
+          Previous page
+          </a>
+        <% } %>
+        <span>Page <%= page %> of <%= totalPages %></span>
+        <% if (page < totalPages) { %>
+          <a class="button" href="/books/search?<%= new URLSearchParams({...query, page: page + 1
+          }).toString() %>">
+          Next page
+          </a>
+        <% } %>
+      </div>
   <% } else if (typeof books !== 'undefined') { %>
       <p>No books found matching your criteria.</p>
   <% } %>

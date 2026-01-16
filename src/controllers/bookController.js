@@ -10,6 +10,10 @@ import { db } from '../config/mysql_config.js'
 export class BookController {
   /**
    * Renders the book search page.
+   * 
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response object.
+   * @param {Function} next - The next middleware function.
    */
   index (req, res, next) {
     res.render('books/search')
@@ -17,6 +21,10 @@ export class BookController {
 
   /**
    * Searches for books based on query parameters.
+   * 
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response object.
+   * @param {Function} next - The next middleware function.
    */
   async search (req, res, next) {
     try {
@@ -32,30 +40,40 @@ export class BookController {
       const sanitizedTitle  = (title  && title.trim())  || undefined
 
       // Build the SQL query dynamically based on provided parameters
-      let query = 'SELECT * FROM books WHERE subject LIKE ?'
+      let queryPart = 'WHERE subject LIKE ?'
       let queryParams = [`%${sanitizedSubject}%`]
 
       if (sanitizedAuthor) {
-        query += ' AND author LIKE ?'
-        queryParams.push('%' + sanitizedAuthor + '%')
+        queryPart += ' AND author LIKE ?'
+        queryParams.push(sanitizedAuthor + '%')
       }
 
       if (sanitizedTitle) {
-        query += ' AND title LIKE ?'
+        queryPart += ' AND title LIKE ?'
         queryParams.push('%' + sanitizedTitle + '%')
       }
 
-      const offset = 0
-      const limit = parseInt(itemsPerPage) || 5
+      // Get total page count for pagination
+      const totalPageQuery = 'SELECT COUNT(*) AS total FROM books ' + queryPart
+      const [result] = await db.query(totalPageQuery, queryParams)
+      const total = result[0].total
 
-      query += ' LIMIT ? OFFSET ?'
+      // Pagination parameters
+      const page = parseInt(req.query.page) || 1;
+      const limit = Math.min(parseInt(itemsPerPage) || 5, 20);
+      const offset = (page - 1) * limit;
+
+      const totalPages = Math.ceil(total / limit)
+
+      // Query for books with pagination
+      let fullQuery = 'SELECT * FROM books ' + queryPart + ' LIMIT ? OFFSET ?'
       queryParams.push(limit, offset)
+      const [books] = await db.query(fullQuery, queryParams)
 
-      const [books] = await db.query(query, queryParams)
-
-      res.render('books/search', { books })
+      res.render('books/search', { books, page, totalPages, query: req.query })
     } catch (error) {
-      next(error)
+      req.session.flash = {type: 'error', text: 'An error occurred while searching for books'}
+      res.redirect('/books')
     }
   }
 }

@@ -163,8 +163,13 @@ img {
   border: none;
 }
 
-.cart a {
+.cart a, .page-navigation a {
   text-decoration: none;
+}
+
+.page-navigation {
+  margin-top: 30px;
+  margin-bottom: 20px;
 }
 
 .table {
