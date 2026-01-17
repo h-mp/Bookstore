@@ -114,16 +114,45 @@ export class CartController {
         throw new Error('User not logged in')
       }
 
-      const query = "SELECT c.isbn, c.qty, m.fname, m.lname, m.address, m.city, m.zip"
-      + "FROM cart c "
-      + "JOIN members m "
-      + "WHERE userid = ?"
+      // Fetch user info
+      const userQuery = "SELECT fname, lname, address, city, zip, email FROM members WHERE userid = ?"
+      const [users] = await db.query(userQuery, [userId])
+      const userInfo = users[0]
 
-      const cartItems = []
-      const grandTotal = 0
+      const orderDate = new Date()
+      let shippingEstimate = new Date(orderDate)
+      shippingEstimate.setDate(orderDate.getDate() + 7)
+      shippingEstimate = shippingEstimate.toISOString().split('T')[0]
 
-      res.render('cart/order', { cartItems, grandTotal })
+      // Insert order into orders table
+      const orderQuery = "INSERT INTO orders (userid, created, shipAddress, shipCity, shipZip) VALUES (?, ?, ?, ?, ?)"
+      const [orderResult] = await db.query(orderQuery, [userId, orderDate, userInfo.address, userInfo.city, userInfo.zip])
+      const orderNumber = orderResult.insertId
+      
+      // Fetch cart items
+      const cartQuery = "SELECT c.isbn, b.title, b.price, c.qty " 
+      + "FROM Cart c " 
+      + "JOIN Books b ON c.isbn = b.isbn "
+      + "WHERE userId = ?"
+      const [cartItems] = await db.query(cartQuery, [userId])
+      const orderDetailsQuery = "INSERT INTO odetails (ono, isbn, qty, amount) VALUES (?, ?, ?, ?)"
+
+      // Calculate totals
+      let grandTotal = 0
+      for (const item of cartItems) {
+        const total = item.price * item.qty
+        grandTotal += total
+
+        await db.query(orderDetailsQuery, [
+          orderNumber,
+          item.isbn,
+          item.qty,
+          total.toFixed(2)])
+      }
+
+      res.render('cart/order', { orderNumber,userInfo, shippingEstimate, cartItems, grandTotal })
     } catch (error) {
+      console.error(error)
       if (error.message === 'User not logged in') {
         res.redirect('/authlogin')
       } else {
