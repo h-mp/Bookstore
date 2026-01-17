@@ -46,16 +46,16 @@ export class BookController {
 
       // Build the SQL query dynamically based on provided parameters
       let queryPart = 'WHERE subject LIKE ?'
-      let queryParams = [`%${subject}%`]
+      let queryParams = [subject.toLowerCase()]
 
       if (sanitizedAuthor) {
         queryPart += ' AND author LIKE ?'
-        queryParams.push(sanitizedAuthor + '%')
+        queryParams.push(sanitizedAuthor.toLowerCase() + '%')
       }
 
       if (sanitizedTitle) {
         queryPart += ' AND title LIKE ?'
-        queryParams.push('%' + sanitizedTitle + '%')
+        queryParams.push('%' + sanitizedTitle.toLowerCase() + '%')
       }
 
       // Get total page count for pagination
