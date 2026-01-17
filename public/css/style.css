@@ -207,3 +207,11 @@ img {
   margin-top: 20px;
   padding: 10px;
 }
+
+footer {
+  margin-top: auto;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
