@@ -4,8 +4,8 @@
   <h2>Invoice for Order no. <%= orderNumber %></h2>
   <div class="shipping-info">
     <p>Name: <%= userInfo.fname + ' ' + userInfo.lname %></p>
-    <p>Address: <%= userInfo.address %> </n>
-    <%= userInfo.city + ', ' + userInfo.zip %></p>
+    <p>Address: <%= userInfo.address %> <br>
+    <span><%= userInfo.city + ', ' + userInfo.zip %></span></p>
     <p>Email: <%= userInfo.email %></p>
     <p>Estimated shipping date: <%= shippingEstimate %></p>
   </div>

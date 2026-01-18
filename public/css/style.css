@@ -132,6 +132,13 @@ img {
   font-size: 30px;
 }
 
+#no-books {
+  font-size: 20px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
 .book {
   border: 1px solid #333;
   background-color: #e1e1e1;

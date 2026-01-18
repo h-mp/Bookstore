@@ -6,10 +6,9 @@
  */
 
 import express from 'express'
-import { HomeController } from '../controllers/HomeController.js'
+import { HomeController } from '../controllers/homeController.js'
 
 export const router = express.Router()
-
 const controller = new HomeController()
 
 // Routes for the home page.

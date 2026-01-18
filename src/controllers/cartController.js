@@ -11,9 +11,9 @@ export class CartController {
   /**
    * Renders the shopping cart page.
    * 
-   * @param {Object} req - The request object.
-   * @param {Object} res - The response object.
-   * @param {Function} next - The next middleware function.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
    */
   async index (req, res, next) {
     try {
@@ -22,7 +22,7 @@ export class CartController {
         throw new Error('User not logged in')
       }
 
-      // Fetch cart items for the user
+      // Fetch cart items for the user.
       const query = "SELECT c.isbn, b.title, b.price, c.qty " 
       + "FROM Cart c " 
       + "JOIN Books b ON c.isbn = b.isbn "
@@ -32,7 +32,7 @@ export class CartController {
       let grandTotal = 0
 
       if (cartItems && cartItems.length > 0) {
-        // Calculate total for each item and the grand total
+        // Calculate total for each item and the grand total.
         cartItems.forEach(item => {
           item.total = (item.price * item.qty).toFixed(2)
           grandTotal += parseFloat(item.total)
@@ -54,16 +54,16 @@ export class CartController {
   /**
    * Adds a book to the shopping cart.
    * 
-   * @param {Object} req - The request object.
-   * @param {Object} res - The response object.
-   * @param {Function} next - The next middleware function.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
    */
   async addToCart (req, res, next) {
     try {
       const { isbn, quantity } = req.body
       const userId = req.session.userId
 
-      // Validate input
+      // Validate input.
       if (!userId) {
         throw new Error('User not logged in')
       }
@@ -72,18 +72,18 @@ export class CartController {
         throw new Error('Invalid ISBN or quantity')
       }
 
-      // Check if the book is already in the cart
+      // Check if the book is already in the cart.
       const cartCheckQuery = "SELECT qty FROM Cart WHERE userId = ? AND isbn = ?"
       const [existingItems] = await db.query(cartCheckQuery, [userId, isbn])
 
       if (existingItems && existingItems.length > 0) {
-        // Update quantity if the item already exists
+        // Update quantity if the item already exists.
         const updateQuery = "UPDATE Cart SET qty = ? WHERE userId = ? AND isbn = ?"
 
         const updatedQuantity = parseInt(existingItems[0].qty) + parseInt(quantity)
         await db.query(updateQuery, [updatedQuantity, userId, isbn])
       } else {
-        // Insert new item into the cart
+        // Insert new item into the cart.
         const insertQuery = "INSERT INTO Cart (userId, isbn, qty) VALUES (?, ?, ?)"
         await db.query(insertQuery, [userId, isbn, quantity])
       }
@@ -103,9 +103,9 @@ export class CartController {
   /**
    * Renders the checkout page.
    *
-   * @param {Object} req - The request object.
-   * @param {Object} res - The response object.
-   * @param {Function} next - The next middleware function.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
    */
   async checkout (req, res, next) {
     try {
@@ -114,22 +114,23 @@ export class CartController {
         throw new Error('User not logged in')
       }
 
-      // Fetch user info
+      // Fetch user info.
       const userQuery = "SELECT fname, lname, address, city, zip, email FROM members WHERE userid = ?"
       const [users] = await db.query(userQuery, [userId])
       const userInfo = users[0]
 
+      // Calculate dates.
       const orderDate = new Date()
       let shippingEstimate = new Date(orderDate)
       shippingEstimate.setDate(orderDate.getDate() + 7)
-      shippingEstimate = shippingEstimate.toISOString().split('T')[0]
+      shippingEstimate = shippingEstimate.toISOString().split('T')[0] // Format as YYYY-MM-DD
 
-      // Insert order into orders table
+      // Insert order into orders table.
       const orderQuery = "INSERT INTO orders (userid, created, shipAddress, shipCity, shipZip) VALUES (?, ?, ?, ?, ?)"
       const [orderResult] = await db.query(orderQuery, [userId, orderDate, userInfo.address, userInfo.city, userInfo.zip])
-      const orderNumber = orderResult.insertId
+      const orderNumber = orderResult.insertId // Get generated order number
       
-      // Fetch cart items
+      // Fetch cart items.
       const cartQuery = "SELECT c.isbn, b.title, b.price, c.qty " 
       + "FROM Cart c " 
       + "JOIN Books b ON c.isbn = b.isbn "
@@ -137,7 +138,7 @@ export class CartController {
       const [cartItems] = await db.query(cartQuery, [userId])
       const orderDetailsQuery = "INSERT INTO odetails (ono, isbn, qty, amount) VALUES (?, ?, ?, ?)"
 
-      // Calculate totals
+      // Calculate totals and insert order details into the database.
       let grandTotal = 0
       for (const item of cartItems) {
         item.total = item.price * item.qty
@@ -149,14 +150,14 @@ export class CartController {
           item.qty,
           item.total.toFixed(2)])
       }
+      grandTotal = grandTotal.toFixed(2)
 
-      // Clear the cart
+      // Clear the cart.
       const cartClearQuery = "DELETE FROM Cart WHERE userId = ?"
       await db.query(cartClearQuery, [userId])
 
       res.render('cart/order', { orderNumber,userInfo, shippingEstimate, cartItems, grandTotal })
     } catch (error) {
-      console.error(error)
       if (error.message === 'User not logged in') {
         res.redirect('/auth/login')
       } else {

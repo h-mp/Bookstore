@@ -69,7 +69,10 @@ Registration:
 - Passwords must be at least 6 characters long.
 
 Features not yet available:
+- Phone number validation (due to big differences in numbers worldwide).
+- Zip codes other than before mentioned formats.
 - Modifying user information after registration.
 - Deleting a user account
 - Removing items from the cart.
 - Reducing the quantity of an item in the cart.
+- Getting the order confimation as an email.
