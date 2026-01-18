@@ -7,6 +7,7 @@
 
 import bcrypt from 'bcryptjs'
 import { db } from '../config/mysql_config.js' 
+import validator from 'validator'
 
 /**
  * Encapsulates a controller.
@@ -95,9 +96,7 @@ export class AuthController {
         res.redirect(`/`)
       })
     } else {
-      const error = new Error('Not Found')
-      error.status = 404
-      next(error)
+      res.redirect(`/`)
     }
   }
 
@@ -155,7 +154,7 @@ export class AuthController {
       // Insert the new member into the database.
       const query = `INSERT INTO Members (fname, lname, address, city, zip, phone, email, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-      await db.query(query, [fname, lname, address, city, zip, phone, normalizeEmail, hashedPassword])
+      await db.query(query, [fname, lname, address, city, zip, phone, normalizedEmail, hashedPassword])
 
       req.session.flash = { type: 'success', text: 'Registration successful. You can now log in.' }
       res.redirect('./login')
