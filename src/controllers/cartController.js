@@ -140,21 +140,25 @@ export class CartController {
       // Calculate totals
       let grandTotal = 0
       for (const item of cartItems) {
-        const total = item.price * item.qty
-        grandTotal += total
+        item.total = item.price * item.qty
+        grandTotal += item.total
 
         await db.query(orderDetailsQuery, [
           orderNumber,
           item.isbn,
           item.qty,
-          total.toFixed(2)])
+          item.total.toFixed(2)])
       }
+
+      // Clear the cart
+      const cartClearQuery = "DELETE FROM Cart WHERE userId = ?"
+      await db.query(cartClearQuery, [userId])
 
       res.render('cart/order', { orderNumber,userInfo, shippingEstimate, cartItems, grandTotal })
     } catch (error) {
       console.error(error)
       if (error.message === 'User not logged in') {
-        res.redirect('/authlogin')
+        res.redirect('/auth/login')
       } else {
         req.session.flash = {type: "error", message: "An error occurred, please try again later"}
         res.redirect('/cart')
