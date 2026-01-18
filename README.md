@@ -1,6 +1,10 @@
 # Online Bookstore
 Assignment A2 for a course.
 
+Author: Hilja-Maria Paananen
+
+Link to GitHub: https://github.com/h-mp/Bookstore
+
 This application is a server-side rendered online bookstore where users can:
 - Register and log in
 - Browse and search books by subject, author, and title
